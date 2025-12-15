@@ -4,6 +4,53 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: react-native
 
 workflows:
+  deploy:
+    description: |
+      Simple deploy workflow for Abisinya Bingo (Bitrise default)
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - script@1:
+        title: Setup environment and install dependencies
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            
+            # Setup npm configuration
+            npm config set legacy-peer-deps true
+            npm config set force true
+            
+            # Clean cache
+            npm cache clean --force
+            
+            # Install dependencies
+            npm install --legacy-peer-deps --force
+            
+            echo "✅ Dependencies installed successfully"
+    - script@1:
+        title: Build Abisinya Bingo app
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            
+            # Install Expo CLI
+            npm install -g @expo/cli@latest
+            
+            # Build the app
+            npx expo export --platform android --output-dir ./build
+            
+            # Create a simple index.html for web preview
+            echo "<!DOCTYPE html><html><head><title>Abisinya Bingo</title></head><body><h1>Abisinya Bingo App Built Successfully!</h1><p>Professional bingo app with 2000+ cartelas ready for deployment.</p></body></html>" > ./build/index.html
+            
+            echo "✅ Abisinya Bingo build completed successfully"
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - deploy_path: './build'
+        - notify_user_groups: none
+
   expo-build:
     description: |
       Build Abisinya Bingo using Expo CLI (Alternative method)
