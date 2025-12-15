@@ -1,0 +1,53 @@
+---
+format_version: '11'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: react-native
+
+workflows:
+  primary:
+    description: |
+      Build and deploy Abisinya Bingo Android APK
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - cache-pull@2: {}
+    - npm@1:
+        inputs:
+        - command: install
+        - cache_local_deps: 'yes'
+    - install-missing-android-tools@3:
+        inputs:
+        - gradlew_path: android/gradlew
+    - change-android-versioncode-and-versionname@1:
+        inputs:
+        - build_gradle_path: android/app/build.gradle
+        - new_version_name: '1.0.0'
+        - new_version_code: '$BITRISE_BUILD_NUMBER'
+    - android-build@1:
+        inputs:
+        - project_location: android
+        - module: app
+        - variant: release
+        - build_type: apk
+    - sign-apk@1:
+        inputs:
+        - android_app: '$BITRISE_APK_PATH'
+        - keystore_url: '$BITRISEIO_ANDROID_KEYSTORE_URL'
+        - keystore_password: '$BITRISEIO_ANDROID_KEYSTORE_PASSWORD'
+        - keystore_alias: '$BITRISEIO_ANDROID_KEYSTORE_ALIAS'
+        - private_key_password: '$BITRISEIO_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD'
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - deploy_path: '$BITRISE_SIGNED_APK_PATH'
+        - notify_user_groups: none
+    - cache-push@2: {}
+
+app:
+  envs:
+  - opts:
+      is_expand: false
+    EXPO_CLI_VERSION: latest
+  - opts:
+      is_expand: false
+    NODE_VERSION: '20'
