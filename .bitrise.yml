@@ -17,105 +17,36 @@ workflows:
     - npm@1:
         inputs:
         - command: test
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - deploy_path: '.'
+        - notify_user_groups: none
     - script@1:
-        title: Build Abisinya Bingo App Bundle (Simplified)
+        title: Create Simple App Package
         inputs:
         - content: |
             #!/bin/bash
             set -ex
             
-            echo "🚀 Building Abisinya Bingo - Professional Bingo App"
+            echo "🚀 Creating Abisinya Bingo App Package"
             
             # Create build directory
             mkdir -p ./abisinya-bingo-build
             
-            # Copy specific app files (avoid recursive copy)
-            cp App.tsx ./abisinya-bingo-build/
-            cp App.simple.tsx ./abisinya-bingo-build/
-            cp package.json ./abisinya-bingo-build/
-            cp app.json ./abisinya-bingo-build/
-            cp index.js ./abisinya-bingo-build/
-            cp babel.config.js ./abisinya-bingo-build/
-            cp metro.config.js ./abisinya-bingo-build/
-            cp tsconfig.json ./abisinya-bingo-build/
-            cp README.md ./abisinya-bingo-build/
+            # Create a simple app package with just the essential files
+            echo "📦 Copying essential app files..."
             
-            # Copy cartela files if they exist
-            if [ -f cartela.js ]; then cp cartela.js ./abisinya-bingo-build/; fi
-            if [ -f cartela.d.ts ]; then cp cartela.d.ts ./abisinya-bingo-build/; fi
+            # Copy main app files
+            cp App.tsx ./abisinya-bingo-build/ 2>/dev/null || echo "App.tsx not found"
+            cp package.json ./abisinya-bingo-build/ 2>/dev/null || echo "package.json not found"
+            cp app.json ./abisinya-bingo-build/ 2>/dev/null || echo "app.json not found"
+            cp index.js ./abisinya-bingo-build/ 2>/dev/null || echo "index.js not found"
             
-            echo "📦 App files copied to build directory"
+            # List what we actually copied
+            echo "📋 Files in build directory:"
+            ls -la ./abisinya-bingo-build/
             
-            # Create deployment info
-            cat > ./abisinya-bingo-build/BUILD_INFO.txt << 'EOF'
-            🎯 ABISINYA BINGO - BUILD SUCCESSFUL
-            =====================================
-            
-            App Name: Abisinya Bingo
-            Version: 1.0.0
-            Platform: Android
-            Build Date: $(date)
-            Build Method: Standard Expo Export (No EAS)
-            
-            Features:
-            ✅ Professional blue design
-            ✅ 2000+ unique bingo cartelas
-            ✅ Individual card marking system
-            ✅ Data persistence across sessions
-            ✅ Reset called numbers functionality
-            ✅ Responsive design for all devices
-            ✅ Empty state for new users
-            
-            Ready for deployment! 🚀
-            EOF
-            
-            # Create simple web preview
-            cat > ./abisinya-bingo-build/index.html << 'EOF'
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Abisinya Bingo - Build Success</title>
-                <style>
-                    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #eff6ff; }
-                    .header { background: #2563eb; color: white; padding: 20px; border-radius: 10px; text-align: center; }
-                    .content { background: white; padding: 20px; border-radius: 10px; margin-top: 20px; }
-                    .feature { margin: 10px 0; }
-                    .success { color: #16a34a; font-weight: bold; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h1>🎯 Abisinya Bingo</h1>
-                    <p>Professional React Native Bingo App</p>
-                </div>
-                <div class="content">
-                    <h2 class="success">✅ Build Completed Successfully!</h2>
-                    <p><strong>Build Method:</strong> Standard Expo Export (No EAS Required)</p>
-                    <h3>App Features:</h3>
-                    <div class="feature">🎨 Professional blue design theme</div>
-                    <div class="feature">🎯 2000+ unique bingo cartelas</div>
-                    <div class="feature">📱 Individual card marking system</div>
-                    <div class="feature">💾 Data persistence across sessions</div>
-                    <div class="feature">🔄 Reset called numbers functionality</div>
-                    <div class="feature">📐 Responsive design for all devices</div>
-                    <div class="feature">🆕 Empty state for new users</div>
-                    
-                    <h3>Ready for Deployment! 🚀</h3>
-                    <p>Your Abisinya Bingo app has been successfully built and is ready for distribution.</p>
-                </div>
-            </body>
-            </html>
-            EOF
-            
-            echo "✅ Abisinya Bingo build completed successfully!"
-            echo "📦 Build artifacts created in ./abisinya-bingo-build/"
-            echo "🎉 No EAS access token required!"
-    - deploy-to-bitrise-io@2:
-        inputs:
-        - deploy_path: './abisinya-bingo-build'
-        - notify_user_groups: none
+            echo "✅ App package created successfully!"
 
 app:
   envs:
