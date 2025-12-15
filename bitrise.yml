@@ -4,6 +4,41 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: react-native
 
 workflows:
+  expo-build:
+    description: |
+      Build Abisinya Bingo using Expo CLI (Alternative method)
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - cache-pull@2: {}
+    - script@1:
+        title: Setup Node and Expo
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            npm cache clean --force
+            npm install -g @expo/cli@latest
+            npm config set legacy-peer-deps true
+    - npm@1:
+        inputs:
+        - command: install --legacy-peer-deps --force
+        - cache_local_deps: 'yes'
+    - script@1:
+        title: Build with Expo
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            npx expo export --platform android
+            echo "Expo build completed"
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - deploy_path: './dist'
+        - notify_user_groups: none
+    - cache-push@2: {}
+
   primary:
     description: |
       Build and deploy Abisinya Bingo Android APK
@@ -12,9 +47,18 @@ workflows:
         run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
     - git-clone@8: {}
     - cache-pull@2: {}
+    - script@1:
+        title: Clean npm cache and setup
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            npm cache clean --force
+            npm config set legacy-peer-deps true
+            npm config set force true
     - npm@1:
         inputs:
-        - command: install
+        - command: install --legacy-peer-deps --force
         - cache_local_deps: 'yes'
     - install-missing-android-tools@3:
         inputs:
@@ -51,3 +95,9 @@ app:
   - opts:
       is_expand: false
     NODE_VERSION: '20'
+  - opts:
+      is_expand: false
+    NPM_CONFIG_LEGACY_PEER_DEPS: 'true'
+  - opts:
+      is_expand: false
+    NPM_CONFIG_FORCE: 'true'
