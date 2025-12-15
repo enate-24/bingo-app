@@ -1,0 +1,113 @@
+name: Release Abisinya Bingo APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🏗 Setup repo
+      uses: actions/checkout@v4
+
+    - name: 🏗 Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: npm
+
+    - name: 📦 Install dependencies
+      run: |
+        npm config set legacy-peer-deps true
+        npm install --legacy-peer-deps --force
+
+    - name: 🚀 Build Abisinya Bingo Release
+      run: |
+        echo "🎯 Building Abisinya Bingo v${{ github.event.inputs.version || github.ref_name }}"
+        
+        # Install Expo CLI
+        npm install -g @expo/cli@latest
+        
+        # Create release build
+        mkdir -p ./release-build
+        npx expo export --platform android --output-dir ./release-build
+        
+        # Create release notes
+        cat > ./release-build/RELEASE_NOTES.md << 'EOF'
+        # 🎯 Abisinya Bingo - Release Build
+        
+        ## Professional React Native Bingo App
+        
+        ### Features
+        - 🎨 **Professional Design**: Modern blue theme with responsive layout
+        - 🎯 **2000+ Cartelas**: Authentic bingo cards with proper number distribution
+        - 📱 **Individual Marking**: Each card has independent number marking
+        - 💾 **Data Persistence**: Progress saves automatically across sessions
+        - 🔄 **Reset Functionality**: Clear marked numbers with menu option
+        - 📐 **Responsive Design**: Works perfectly on phones and tablets
+        - 🆕 **New User Experience**: Clean empty state with helpful instructions
+        
+        ### How to Use
+        1. Tap "+ Add Card" to add cartelas by ID (1-2000)
+        2. Tap numbers on cards to mark them as called (red background)
+        3. Use menu (⋮) to reset all marked numbers
+        4. Data automatically saves between sessions
+        
+        ### Technical Details
+        - **Platform**: Android (React Native + Expo)
+        - **Version**: 1.0.0
+        - **Build**: Production ready
+        - **Size**: Optimized for mobile devices
+        
+        ## Ready for Distribution! 🚀
+        EOF
+        
+        echo "✅ Release build completed!"
+
+    - name: 📦 Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.event.inputs.version || github.ref_name }}
+        release_name: Abisinya Bingo ${{ github.event.inputs.version || github.ref_name }}
+        body: |
+          🎯 **Abisinya Bingo - Professional Bingo App**
+          
+          ## What's New
+          - Professional React Native bingo application
+          - 2000+ unique bingo cartelas
+          - Individual card marking system
+          - Data persistence across sessions
+          - Modern blue design theme
+          - Responsive layout for all devices
+          
+          ## Download & Install
+          Download the build artifacts and follow the installation instructions.
+          
+          ## Features
+          ✅ Add cartelas by ID (1-2000)
+          ✅ Mark numbers as called
+          ✅ Reset functionality
+          ✅ Data persistence
+          ✅ Professional design
+          
+          Ready for deployment! 🚀
+        draft: false
+        prerelease: false
+
+    - name: 📱 Upload Release Assets
+      uses: actions/upload-artifact@v4
+      with:
+        name: abisinya-bingo-release-${{ github.event.inputs.version || github.ref_name }}
+        path: ./release-build/
+        retention-days: 90

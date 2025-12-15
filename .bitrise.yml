@@ -10,27 +10,13 @@ workflows:
     - activate-ssh-key@4:
         run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
     - git-clone@8: {}
-    - script@1:
-        title: Install Dependencies (Fixed for React Native conflicts)
+    - npm@1:
         inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            
-            echo "🚀 Building Abisinya Bingo - Professional Bingo App"
-            echo "📱 Features: 2000+ cartelas, individual marking, data persistence"
-            
-            # Setup npm to handle peer dependency conflicts
-            npm config set legacy-peer-deps true
-            npm config set force true
-            
-            # Clean npm cache
-            npm cache clean --force
-            
-            # Install dependencies with conflict resolution
-            npm install --legacy-peer-deps --force
-            
-            echo "✅ Dependencies installed successfully!"
+        - command: install
+        - cache_local_deps: 'no'
+    - npm@1:
+        inputs:
+        - command: test
     - script@1:
         title: Build Abisinya Bingo App Bundle
         inputs:
@@ -38,7 +24,8 @@ workflows:
             #!/bin/bash
             set -ex
             
-            echo "🔨 Building Abisinya Bingo app..."
+            echo "🚀 Building Abisinya Bingo - Professional Bingo App"
+            echo "📱 Features: 2000+ cartelas, individual marking, data persistence"
             
             # Install Expo CLI globally
             npm install -g @expo/cli@latest
@@ -50,7 +37,7 @@ workflows:
             npx expo export --platform android --output-dir ./abisinya-bingo-build
             
             # Create deployment info
-            cat > ./abisinya-bingo-build/BUILD_INFO.txt << EOF
+            cat > ./abisinya-bingo-build/BUILD_INFO.txt << 'EOF'
             🎯 ABISINYA BINGO - BUILD SUCCESSFUL
             =====================================
             
@@ -72,7 +59,7 @@ workflows:
             EOF
             
             # Create simple web preview
-            cat > ./abisinya-bingo-build/index.html << EOF
+            cat > ./abisinya-bingo-build/index.html << 'EOF'
             <!DOCTYPE html>
             <html lang="en">
             <head>
