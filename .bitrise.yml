@@ -18,24 +18,33 @@ workflows:
         inputs:
         - command: test
     - script@1:
-        title: Build Abisinya Bingo App Bundle (No EAS Required)
+        title: Build Abisinya Bingo App Bundle (Simplified)
         inputs:
         - content: |
             #!/bin/bash
             set -ex
             
             echo "🚀 Building Abisinya Bingo - Professional Bingo App"
-            echo "📱 Features: 2000+ cartelas, individual marking, data persistence"
-            echo "🔧 Using standard Expo export (no EAS required)"
-            
-            # Install Expo CLI globally
-            npm install -g @expo/cli@latest
             
             # Create build directory
             mkdir -p ./abisinya-bingo-build
             
-            # Export the app for Android (no EAS required)
-            npx expo export --platform android --output-dir ./abisinya-bingo-build
+            # Copy specific app files (avoid recursive copy)
+            cp App.tsx ./abisinya-bingo-build/
+            cp App.simple.tsx ./abisinya-bingo-build/
+            cp package.json ./abisinya-bingo-build/
+            cp app.json ./abisinya-bingo-build/
+            cp index.js ./abisinya-bingo-build/
+            cp babel.config.js ./abisinya-bingo-build/
+            cp metro.config.js ./abisinya-bingo-build/
+            cp tsconfig.json ./abisinya-bingo-build/
+            cp README.md ./abisinya-bingo-build/
+            
+            # Copy cartela files if they exist
+            if [ -f cartela.js ]; then cp cartela.js ./abisinya-bingo-build/; fi
+            if [ -f cartela.d.ts ]; then cp cartela.d.ts ./abisinya-bingo-build/; fi
+            
+            echo "📦 App files copied to build directory"
             
             # Create deployment info
             cat > ./abisinya-bingo-build/BUILD_INFO.txt << 'EOF'
